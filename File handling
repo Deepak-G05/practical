@@ -1,0 +1,83 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+class student{
+    char name[10];
+    public:
+    int rollno;
+    void get();
+    void display();
+};
+
+void student :: get() {
+    cout << "Enter name: ";
+    cin >> name;
+    cout << "Enter roll no: ";
+    cin >> rollno;
+}
+
+void student :: display() {
+    cout << "Name: " << name << endl;
+    cout << "Roll No: " << rollno << endl;
+}
+
+int main() {
+    student s;
+    fstream f, t;
+    int n, d;
+
+    while (true) {
+        cout << "1. Write \n2. Read \n3. Append\n4. Delete\n5. Exit" << endl;
+        cin >> n;
+
+        switch(n) {
+            case 1:
+                s.get();
+                f.open("school", ios::out);
+                f.write((char*)&s, sizeof(s));
+                f.close();
+                break;
+
+            case 2:
+                f.open("school", ios::in);
+                while (f.read((char*)&s, sizeof(s))) {
+                    s.display();
+                }
+                f.close();
+                break;
+
+            case 3:
+                f.open("school", ios::out | ios::app);
+                s.get();
+                f.write((char*)&s, sizeof(s));
+                f.close();
+                break;
+
+            case 4:
+                cout << "Enter roll no. to delete: ";
+                cin >> d;
+                f.open("school", ios::in);
+                t.open("temp", ios::out); // Use "temp" file
+                while (f.read((char*)&s, sizeof(s))) {
+                    if (s.rollno != d) {
+                        t.write((char*)&s, sizeof(s));
+                    }
+                }
+                f.close();
+                t.close();
+                remove("school");
+                rename("temp", "school");
+                break;
+
+            case 5:
+                exit(0);
+                break;
+
+            default:
+                cout << "Invalid choice. Try again.\n";
+        }
+    }
+}
+
+
