@@ -1,0 +1,189 @@
+#include <iostream>
+using namespace std;
+
+class node {
+private:
+    string name;
+    string telephone;
+    int key;
+
+public:
+    node() {
+        key = 0;
+    }
+    friend class hashing;
+};
+
+// Improved hash function
+int better_hash(string s) {
+    int sum = 0;
+    for (int i = 0; s[i] != '\0'; i++) {
+        sum = (sum * 31 + s[i]) % 100;  // Multiplied by 31 for better distribution
+    }
+    return sum;
+}
+
+class hashing {
+private:
+    node data[100];
+    int size = 100;
+    string tele;
+
+public:
+    hashing() {}
+
+    void create_record(string n, string tele) {
+        int k = better_hash(n);
+        int index = k % size;
+
+        for (int j = 0; j < size; j++) {
+            if (data[index].key == 0) {
+                data[index].key = k;
+                data[index].name = n;
+                data[index].telephone = tele;
+                cout << "\nRecord Created Successfully!";
+                return;
+            } else {
+                index = (index + 1) % size;
+            }
+        }
+        cout << "\nTelephone book is full!";
+    }
+
+    void search_record(string name) {
+        int k = better_hash(name);
+        int index = k % size;
+        int flag = 0;
+
+        for (int a = 0; a < size; a++) {
+            if (data[index].key == k && data[index].name == name) {
+                flag = 1;
+                cout << "\nRecord Found\n";
+                cout << "Name :: " << data[index].name << endl;
+                cout << "Telephone :: " << data[index].telephone << endl;
+                return;
+            } else {
+                index = (index + 1) % size;
+            }
+        }
+        if (flag == 0) {
+            cout << "\nRecord not found";
+        }
+    }
+
+    void delete_record(string name) {
+        int k = better_hash(name);
+        int index = k % size;
+        int flag = 0;
+
+        for (int a = 0; a < size; a++) {
+            if (data[index].key == k && data[index].name == name) {
+                flag = 1;
+                data[index].key = 0;
+                data[index].name = " ";
+                data[index].telephone = " ";
+                cout << "\nRecord Deleted successfully" << endl;
+                return;
+            } else {
+                index = (index + 1) % size;
+            }
+        }
+        if (flag == 0) {
+            cout << "\nRecord not found";
+        }
+    }
+
+    void update_record(string name) {
+        int k = better_hash(name);
+        int index = k % size;
+        int flag = 0;
+
+        for (int a = 0; a < size; a++) {
+            if (data[index].key == k && data[index].name == name) {
+                flag = 1;
+                break;
+            } else {
+                index = (index + 1) % size;
+            }
+        }
+
+        if (flag == 1) {
+            cout << "Enter the new telephone number :: ";
+            getline(cin, tele);
+            data[index].telephone = tele;
+            cout << "\nRecord Updated successfully";
+        } else {
+            cout << "\nRecord not found";
+        }
+    }
+
+    void display_record() {
+        cout << "\n\tName\t\tTelephone" << endl;
+        cout << "----------------------------------------";
+        for (int a = 0; a < size; a++) {
+            if (data[a].key != 0) {
+                cout << "\n\t" << data[a].name << "\t\t" << data[a].telephone;
+            }
+        }
+        cout << endl;
+    }
+};
+
+int main() {
+    hashing s;
+    string name;
+    string telephone;
+    int choice;
+    bool loop = true;
+
+    while (loop) {
+        cout << "\n------------------------------------------" << endl;
+        cout << " Telephone book Database " << endl;
+        cout << "------------------------------------------" << endl;
+        cout << " 1. Create Record" << endl;
+        cout << " 2. Display Records" << endl;
+        cout << " 3. Search Record" << endl;
+        cout << " 4. Update Record" << endl;
+        cout << " 5. Delete Record" << endl;
+        cout << " 6. Exit" << endl;
+        cout << " Enter Choice :: ";
+        cin >> choice;
+        cin.ignore();  // To flush the newline character after number input
+
+        switch (choice) {
+            case 1:
+                cout << "\nEnter name :: ";
+                getline(cin, name);
+                cout << "Enter Telephone number :: ";
+                getline(cin, telephone);
+                s.create_record(name, telephone);
+                break;
+            case 2:
+                s.display_record();
+                break;
+            case 3:
+                cout << "\nEnter the name :: ";
+                getline(cin, name);
+                s.search_record(name);
+                break;
+            case 4:
+                cout << "\nEnter the name :: ";
+                getline(cin, name);
+                s.update_record(name);
+                break;
+            case 5:
+                cout << "\nEnter the name to Delete :: ";
+                getline(cin, name);
+                s.delete_record(name);
+                break;
+            case 6:
+                loop = false;
+                cout << "Exiting Telephone Book... Goodbye!";
+                break;
+            default:
+                cout << "You Entered something wrong!!!";
+                break;
+        }
+    }
+    return 0;
+}

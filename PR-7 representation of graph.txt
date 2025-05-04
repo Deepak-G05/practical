@@ -1,0 +1,85 @@
+#include <iostream>
+#include <queue>
+using namespace std;
+
+const int MAX = 50;
+int adj_mat[MAX][MAX] = {0};
+int visited[MAX] = {0};
+
+void dfs(int s, int n, string cities[]) {
+    visited[s] = 1;
+    cout << cities[s] << " ";
+    for (int i = 0; i < n; i++) {
+        if (adj_mat[s][i] && !visited[i]) {
+            dfs(i, n, cities);
+        }
+    }
+}
+
+void bfs(int s, int n, string cities[]) {
+    bool visited_bfs[MAX] = {false};
+    queue<int> q;
+    visited_bfs[s] = true;
+    q.push(s);
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+        cout << cities[v] << " ";
+        for (int i = 0; i < n; i++) {
+            if (adj_mat[v][i] && !visited_bfs[i]) {
+                visited_bfs[i] = true;
+                q.push(i);
+            }
+        }
+    }
+}
+
+int main() {
+    int n;
+    cout << "Enter number of cities: ";
+    cin >> n;
+
+    string cities[n];
+    for (int i = 0; i < n; i++) {
+        cout << "Enter city #" << i << " (Airport Code or City Name): ";
+        cin >> cities[i];
+    }
+
+    // Enter distances (or cost) between cities
+    cout << "\nEnter flight costs between cities (0 if no direct flight):\n";
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            cout << "Cost between " << cities[i] << " and " << cities[j] << ": ";
+            cin >> adj_mat[i][j];
+            adj_mat[j][i] = adj_mat[i][j]; // since the graph is undirected
+        }
+    }
+
+    // Display the adjacency matrix
+    cout << "\nAdjacency Matrix:\n\t";
+    for (int i = 0; i < n; i++) {
+        cout << cities[i] << "\t";
+    }
+    cout << endl;
+    for (int i = 0; i < n; i++) {
+        cout << cities[i] << "\t";
+        for (int j = 0; j < n; j++) {
+            cout << adj_mat[i][j] << "\t";
+        }
+        cout << endl;
+    }
+
+    // Starting vertex
+    int u;
+    cout << "\nEnter starting city index (0 to " << n - 1 << "): ";
+    cin >> u;
+
+    cout << "\nDFS Traversal: ";
+    dfs(u, n, cities);
+
+    cout << "\nBFS Traversal: ";
+    bfs(u, n, cities);
+
+    cout << endl;
+    return 0;
+}

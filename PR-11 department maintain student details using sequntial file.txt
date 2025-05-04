@@ -1,0 +1,155 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+using namespace std;
+
+class Student {
+public:
+    int rollNo;
+    char name[50];
+    char division[10];
+    char address[100];
+
+    void input() {
+        cout << "\nEnter Roll Number: ";
+        cin >> rollNo;
+        cin.ignore();
+
+        cout << "Enter Name: ";
+        cin.getline(name, 50);
+
+        cout << "Enter Division: ";
+        cin.getline(division, 10);
+
+        cout << "Enter Address: ";
+        cin.getline(address, 100);
+    }
+
+    void display() const {
+        cout << "\nRoll Number: " << rollNo
+             << "\nName: " << name
+             << "\nDivision: " << division
+             << "\nAddress: " << address << endl;
+    }
+
+    int getRollNo() const {
+        return rollNo;
+    }
+};
+
+// Function to add a student record
+void addStudent() {
+    Student s;
+    s.input();
+
+    ofstream out("students.dat", ios::binary | ios::app);
+    out.write((char*)&s, sizeof(s));
+    out.close();
+
+    cout << "\nStudent record added successfully.\n";
+}
+
+// Function to search for a student by roll number
+void searchStudent() {
+    int rno;
+    cout << "\nEnter Roll Number to search: ";
+    cin >> rno;
+
+    ifstream in("students.dat", ios::binary);
+    Student s;
+    bool found = false;
+
+    while (in.read((char*)&s, sizeof(s))) {
+        if (s.getRollNo() == rno) {
+            cout << "\nStudent Found:";
+            s.display();
+            found = true;
+            break;
+        }
+    }
+
+    in.close();
+
+    if (!found)
+        cout << "\nRecord not found for Roll Number " << rno << ".\n";
+}
+
+// Function to delete a student record
+void deleteStudent() {
+    int rno;
+    cout << "\nEnter Roll Number to delete: ";
+    cin >> rno;
+
+    ifstream in("students.dat", ios::binary);
+    ofstream out("temp.dat", ios::binary);
+    Student s;
+    bool deleted = false;
+
+    while (in.read((char*)&s, sizeof(s))) {
+        if (s.getRollNo() != rno) {
+            out.write((char*)&s, sizeof(s));
+        } else {
+            deleted = true;
+        }
+    }
+
+    in.close();
+    out.close();
+
+    remove("students.dat");
+    rename("temp.dat", "students.dat");
+
+    if (deleted)
+        cout << "\nRecord deleted successfully.\n";
+    else
+        cout << "\nRecord not found for Roll Number " << rno << ".\n";
+}
+
+// Function to display all student records
+void displayAllStudents() {
+    ifstream in("students.dat", ios::binary);
+    Student s;
+    bool any = false;
+
+    cout << "\n===== All Student Records =====\n";
+
+    while (in.read((char*)&s, sizeof(s))) {
+        s.display();
+        any = true;
+    }
+
+    if (!any) {
+        cout << "\nNo student records found.\n";
+    }
+
+    in.close();
+}
+
+// Main menu
+int main() {
+    int choice;
+
+    do {
+        cout << "\n===== Student Information System =====";
+        cout << "\n1. Add Student";
+        cout << "\n2. Search Student by Roll Number";
+        cout << "\n3. Delete Student";
+        cout << "\n4. Display All Students";
+        cout << "\n5. Exit";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+        cin.ignore();
+
+        switch (choice) {
+            case 1: addStudent(); break;
+            case 2: searchStudent(); break;
+            case 3: deleteStudent(); break;
+            case 4: displayAllStudents(); break;
+            case 5: cout << "\nExiting...\n"; break;
+            default: cout << "\nInvalid choice. Try again.\n";
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}

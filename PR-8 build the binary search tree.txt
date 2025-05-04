@@ -1,0 +1,82 @@
+#include <iostream>
+#include <iomanip>
+using namespace std;
+
+const int MAX = 20;
+float p[MAX], q[MAX];
+float w[MAX][MAX], c[MAX][MAX];
+int r[MAX][MAX];
+int n;
+
+void OBST() {
+    for (int i = 0; i <= n; i++) {
+        w[i][i] = q[i];
+        c[i][i] = 0;
+        r[i][i] = 0;
+
+        w[i][i + 1] = q[i] + q[i + 1] + p[i + 1];
+        c[i][i + 1] = w[i][i + 1];
+        r[i][i + 1] = i + 1;
+    }
+
+    for (int m = 2; m <= n; m++) {
+        for (int i = 0; i <= n - m; i++) {
+            int j = i + m;
+            w[i][j] = w[i][j - 1] + p[j] + q[j];
+            c[i][j] = 9999;
+
+            for (int k = r[i][j - 1]; k <= r[i + 1][j]; k++) {
+                float temp = c[i][k - 1] + c[k][j] + w[i][j];
+                if (temp < c[i][j]) {
+                    c[i][j] = temp;
+                    r[i][j] = k;
+                }
+            }
+        }
+    }
+
+    cout << "\nOptimal BST cost = " << c[0][n] << endl;
+    cout << "Root of the OBST = " << r[0][n] << endl;
+}
+
+void printOBST(int i, int j) {
+    if (i >= j)
+        return;
+
+    int root = r[i][j];
+    cout << "\nRoot of subtree [" << i << "," << j << "] is key " << root;
+
+    if (r[i][root - 1] != 0)
+        cout << "\n Left child of " << root << " is " << r[i][root - 1];
+
+    if (r[root][j] != 0)
+        cout << "\n Right child of " << root << " is " << r[root][j];
+
+    printOBST(i, root - 1);
+    printOBST(root, j);
+}
+
+int main() {
+    cout << "\n****** PROGRAM FOR OPTIMAL BINARY SEARCH TREE (OBST) ******\n";
+
+    cout << "\nEnter the number of keys: ";
+    cin >> n;
+
+    cout << "\nEnter probabilities of successful searches (p1 to pn):\n";
+    for (int i = 1; i <= n; i++) {
+        cout << "p[" << i << "]: ";
+        cin >> p[i];
+    }
+
+    cout << "\nEnter probabilities of unsuccessful searches (q0 to qn):\n";
+    for (int i = 0; i <= n; i++) {
+        cout << "q[" << i << "]: ";
+        cin >> q[i];
+    }
+
+    OBST();
+    printOBST(0, n);
+
+    return 0;
+}
+

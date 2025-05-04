@@ -1,0 +1,130 @@
+#include <iostream>
+using namespace std;
+
+struct Node {
+    string key, meaning;
+    Node* left = NULL;
+    Node* right = NULL;
+};
+
+Node* insert(Node* root, string k, string m) {
+    if (!root) {
+        root = new Node();
+        root->key = k;
+        root->meaning = m;
+        return root;
+    }
+    if (k < root->key) 
+        root->left = insert(root->left, k, m);
+    else if (k > root->key) 
+        root->right = insert(root->right, k, m);
+    else 
+        root->meaning = m; // update
+    return root;
+}
+
+Node* findMin(Node* root) {
+    while (root->left) 
+        root = root->left;
+    return root;
+}
+
+Node* remove(Node* root, string k) {
+    if (!root) 
+        return NULL;
+    if (k < root->key) 
+        root->left = remove(root->left, k);
+    else if (k > root->key) 
+        root->right = remove(root->right, k);
+    else {
+        if (!root->left) 
+            return root->right;
+        else if (!root->right) 
+            return root->left;
+        Node* temp = findMin(root->right);
+        root->key = temp->key;
+        root->meaning = temp->meaning;
+        root->right = remove(root->right, temp->key);
+    }
+    return root;
+}
+
+void displayAsc(Node* root) {
+    if (!root) return;
+    displayAsc(root->left);
+    cout << root->key << ": " << root->meaning << endl;
+    displayAsc(root->right);
+}
+
+void displayDesc(Node* root) {
+    if (!root) return;
+    displayDesc(root->right);
+    cout << root->key << ": " << root->meaning << endl;
+    displayDesc(root->left);
+}
+
+bool search(Node* root, string k, int& cmp) {
+    while (root) {
+        cmp++;
+        if (k == root->key) return true;
+        if (k < root->key) 
+            root = root->left;
+        else 
+            root = root->right;
+    }
+    return false;
+}
+
+int height(Node* root) {
+    if (!root) return 0;
+    return 1 + max(height(root->left), height(root->right));
+}
+
+int main() {
+    Node* root = NULL;
+    int ch, cmp;
+    string k, m;
+    do {
+        cout << "\n1. Insert 2. Delete 3. Update 4. Ascending Display 5. Descending Display 6. Search 7. Exit\nChoice: ";
+        cin >> ch;
+        switch (ch) {
+            case 1: 
+                cout << "Enter keyword & meaning: "; 
+                cin >> k >> m;
+                root = insert(root, k, m); 
+                break;
+            case 2: 
+                cout << "Keyword to delete: "; 
+                cin >> k;
+                root = remove(root, k); 
+                break;
+            case 3: 
+                cout << "Keyword to update: "; 
+                cin >> k;
+                cout << "New meaning: "; 
+                cin >> m;
+                root = insert(root, k, m); 
+                break;
+            case 4: 
+                cout << "\nDictionary in Ascending Order:\n";
+                displayAsc(root); 
+                break;
+            case 5: 
+                cout << "\nDictionary in Descending Order:\n";
+                displayDesc(root); 
+                break;
+            case 6: 
+                cout << "Enter keyword to search: "; 
+                cin >> k;
+                cmp = 0;
+                if (search(root, k, cmp))
+                    cout << "Found in " << cmp << " comparisons.\n";
+                else
+                    cout << "Not found. Comparisons: " << cmp << endl;
+                break;
+        }
+    } while (ch != 7);
+
+    cout << "Max comparisons needed (tree height): " << height(root) << endl;
+    return 0;
+}

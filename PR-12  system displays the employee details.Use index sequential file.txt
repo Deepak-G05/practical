@@ -1,0 +1,177 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+class Employee {
+public:
+    int id;
+    char name[30], designation[30];
+    float salary;
+
+    void input() {
+        cout << "\nEnter ID: ";
+        cin >> id;
+        cin.ignore();
+
+        cout << "Enter Name: ";
+        cin.getline(name, 30);
+
+        cout << "Enter Designation: ";
+        cin.getline(designation, 30);
+
+        cout << "Enter Salary: ";
+        cin >> salary;
+    }
+
+    void display() const {
+        cout << "\nID: " << id
+             << "\nName: " << name
+             << "\nDesignation: " << designation
+             << "\nSalary: " << salary << "\n";
+    }
+};
+
+// Add new employee and index entry
+void addEmployee() {
+    Employee e;
+    e.input();
+
+    fstream data("employee.dat", ios::binary | ios::app);
+    fstream index("index.dat", ios::binary | ios::app);
+
+    data.seekp(0, ios::end);
+    int pos = data.tellp();
+
+    data.write((char*)&e, sizeof(e));
+    index.write((char*)&e.id, sizeof(e.id));
+    index.write((char*)&pos, sizeof(pos));
+
+    data.close();
+    index.close();
+
+    cout << "\nEmployee added successfully.\n";
+}
+
+// Search employee using index file
+void searchEmployee() {
+    int id, fileId, pos;
+    bool found = false;
+
+    cout << "\nEnter Employee ID to search: ";
+    cin >> id;
+
+    ifstream index("index.dat", ios::binary);
+
+    while (index.read((char*)&fileId, sizeof(fileId))) {
+        index.read((char*)&pos, sizeof(pos));
+
+        if (fileId == id) {
+            ifstream data("employee.dat", ios::binary);
+            Employee e;
+
+            data.seekg(pos);
+            data.read((char*)&e, sizeof(e));
+
+            e.display();
+
+            found = true;
+            data.close();
+            break;
+        }
+    }
+
+    index.close();
+
+    if (!found)
+        cout << "\nEmployee not found.\n";
+}
+
+// Delete index entry for employee
+void deleteEmployee() {
+    int id, fileId, pos;
+    bool found = false;
+
+    cout << "\nEnter Employee ID to delete: ";
+    cin >> id;
+
+    ifstream index("index.dat", ios::binary);
+    ofstream tempIndex("temp.dat", ios::binary);
+
+    while (index.read((char*)&fileId, sizeof(fileId))) {
+        index.read((char*)&pos, sizeof(pos));
+
+        if (fileId != id) {
+            tempIndex.write((char*)&fileId, sizeof(fileId));
+            tempIndex.write((char*)&pos, sizeof(pos));
+        } else {
+            found = true;
+        }
+    }
+
+    index.close();
+    tempIndex.close();
+
+    remove("index.dat");
+    rename("temp.dat", "index.dat");
+
+    if (found)
+        cout << "\nEmployee deleted from index. (Note: Record remains in file for simplicity)\n";
+    else
+        cout << "\nEmployee not found.\n";
+}
+
+// Display all employees
+void displayEmployees() {
+    ifstream data("employee.dat", ios::binary);
+    ifstream index("index.dat", ios::binary);
+
+    if (!data || !index) {
+        cout << "\nNo data available.\n";
+        return;
+    }
+
+    int fileId, pos;
+    bool any = false;
+
+    cout << "\n--- All Employees ---\n";
+
+    while (index.read((char*)&fileId, sizeof(fileId))) {
+        index.read((char*)&pos, sizeof(pos));
+
+        data.seekg(pos);
+        Employee e;
+        data.read((char*)&e, sizeof(e));
+
+        e.display();
+        any = true;
+    }
+
+    if (!any)
+        cout << "\nNo employee records found.\n";
+
+    data.close();
+    index.close();
+}
+
+// Main menu
+int main() {
+    int ch;
+
+    do {
+        cout << "\n--- Employee Management ---\n";
+        cout << "1. Add Employee\n2. Search Employee\n3. Delete Employee\n4. Display All Employees\n5. Exit\nEnter choice: ";
+        cin >> ch;
+
+        switch (ch) {
+            case 1: addEmployee(); break;
+            case 2: searchEmployee(); break;
+            case 3: deleteEmployee(); break;
+            case 4: displayEmployees(); break;
+            case 5: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice!\n";
+        }
+
+    } while (ch != 5);
+
+    return 0;
+}
